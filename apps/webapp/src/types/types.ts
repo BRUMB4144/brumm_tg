@@ -5,7 +5,6 @@ export interface IProfile {
   subscription: ISubscription;
   progress: IProgress;
   firstLogin: string;
-  subscribedToChannel: boolean;
   createdAt: string;
 }
 

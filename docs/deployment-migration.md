@@ -33,8 +33,8 @@ Mini App сохраняется.
 - Рабочий `gusev_new` в `/var/www/gusev`.
 - Репозиторий `brumm_tg` в `/var/www/brumm-tg`.
 - Доступ к DNS/TLS для `front.gusefwebapp.pro` уже настроен.
-- Бот добавлен администратором каналов, если используются проверки публичного канала и приглашения
-  в приватный канал.
+- Бот добавлен администратором приватного premium-канала с правами создавать приглашения и удалять
+  участников.
 
 Перед началом сохраните текущие версии и конфиги:
 
@@ -71,7 +71,6 @@ TELEGRAM_BOT_TOKEN=<токен основного бота>
 TELEGRAM_SERVICE_TOKEN=<общий случайный секрет>
 TELEGRAM_BOT_USERNAME=GuseffGoBot
 TELEGRAM_SUPPORT_USERNAME=@GuseffGo
-TELEGRAM_CHANNEL_ID=<id публичного канала>
 TELEGRAM_PRIVATE_CHANNEL_ID=<id приватного premium-канала>
 ```
 
