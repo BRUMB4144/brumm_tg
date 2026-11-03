@@ -1,0 +1,14 @@
+{
+  "name": "@brumm-tg/bot",
+  "private": true,
+  "version": "1.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "node-telegram-bot-api": "^2.1.0"
+  }
+}
