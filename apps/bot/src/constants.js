@@ -1,0 +1,12 @@
+const APP_PLATFORMS = ['ios', 'android'];
+const PRO_MODE = { PAID: 'paid', FREE: 'free' };
+const TELEGRAM_API_ROOT = 'https://api.telegram.org';
+const BROADCAST = {
+  BATCH_SIZE: 100,
+  DELAY_BETWEEN_BATCHES_MS: 5000,
+  DELAY_BETWEEN_MESSAGES_MS: 100,
+  MAX_ATTEMPTS_PER_USER: 3,
+  DEFAULT_RETRY_AFTER_SECONDS: 8
+};
+
+module.exports = { APP_PLATFORMS, PRO_MODE, TELEGRAM_API_ROOT, BROADCAST };
