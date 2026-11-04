@@ -5,7 +5,7 @@ const logger = require('../utils/logger');
 
 let bots = [];
 
-/** Поднимает Telegram-ботов. Вызывается после успешного подключения к базе. */
+/** Поднимает Telegram-ботов; данные доступны только через backend API. */
 const startBots = () => {
   const mainBot = createMainBot();
   bots = [mainBot];
@@ -25,14 +25,15 @@ const startBots = () => {
 };
 
 /** Останавливает polling, чтобы процесс мог завершиться штатно. */
-const stopBots = () => {
-  bots.forEach((bot) => {
+const stopBots = async () => {
+  await Promise.all(bots.map(async (bot) => {
     try {
-      bot.stop?.();
+      await bot.stop?.();
+      await bot.drain?.();
     } catch (error) {
       logger.warn('Ошибка остановки бота:', error.message);
     }
-  });
+  }));
   bots = [];
 };
 

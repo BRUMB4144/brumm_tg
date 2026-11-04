@@ -1,8 +1,8 @@
 import { Badge } from "@geist-ui/react";
 import X from "../../../assets/modalClose.svg";
-import { FC, useEffect, useState } from "react";
+import { FC } from "react";
 import { NotificationCard } from "../NotificationCard/NotificationCard";
-import { userService } from "../../../services/user.service";
+import { useNotifications } from "../../../lib/notifications";
 
 interface NotificationProps {
   isOpen: boolean;
@@ -10,21 +10,8 @@ interface NotificationProps {
 }
 
 export const Notification: FC<NotificationProps> = ({ isOpen, onClose }) => {
-  const [notify, setNotify] = useState<
-    | { _id: string; title: string; description: string; createdAt: string }[]
-    | null
-  >(null);
-  const getNotifications = async () => {
-    const response = await userService.getNotifications();
-    setNotify(response);
-  };
-  const handleDelete = async (id: string) => {
-    await userService.deleteNotification(id);
-    getNotifications();
-  };
-  useEffect(() => {
-    getNotifications();
-  }, []);
+  const { data: notify, isLoading, isError, refetch, remove } = useNotifications(isOpen);
+  const handleDelete = (id: string) => remove.mutate(id);
   return (
     <>
       {isOpen && (
@@ -48,6 +35,8 @@ export const Notification: FC<NotificationProps> = ({ isOpen, onClose }) => {
               </div>
               <img src={X} alt="" width={24} onClick={onClose} />
             </div>
+            {isLoading && <p>Загрузка уведомлений…</p>}
+            {(isError || remove.isError) && <p role="alert">Не удалось загрузить или изменить уведомления. <button onClick={() => void refetch()}>Повторить</button></p>}
             <br />
             <div className="flex flex-col gap-y-4">
               <div className="flex flex-col gap-y-4">

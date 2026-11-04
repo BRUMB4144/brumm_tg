@@ -1,3 +1,4 @@
+import { reportRequestError } from '../../../lib/requestError';
 import { NavbarIntermediate } from "../../../components/Modules/NavbarIntermediate";
 import { useNavigate } from "react-router-dom";
 
@@ -12,8 +13,10 @@ export const City = () => {
   const [data, setData] = useState<IPathWay[]>([]);
   useEffect(() => {
     const fetchPathWays = async () => {
-      const response = await PathWay.getPathWays();
-      setData(response);
+      try {
+        const response = await PathWay.getPathWays();
+        setData(response);
+      } catch (error) { reportRequestError(error); }
     };
     fetchPathWays();
   }, []);

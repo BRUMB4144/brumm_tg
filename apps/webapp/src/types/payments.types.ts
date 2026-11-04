@@ -4,5 +4,5 @@ export interface IPaymentCreate {
   paymentUrl: string;
   amount: number;
   paymentType: string;
-  email: string;
+  email?: string;
 }

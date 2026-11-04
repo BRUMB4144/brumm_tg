@@ -1,3 +1,4 @@
+import { reportRequestError } from '../../lib/requestError';
 import { useEffect, useState } from "react";
 import Avatar from "../../assets/Avatar.png";
 import checkMark from "../../assets/checkMark.svg";
@@ -8,13 +9,13 @@ import { useNavigate } from "react-router-dom";
 import { IPaymentCreate } from "../../types/payments.types";
 import { Drawer } from "@geist-ui/react";
 import { Button } from "../../components/ui/Button/Button";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 export const Landing = () => {
   const [payment, setPayment] = useState<IPaymentCreate | null>(null);
-  const [oneMonth, setOneMonth] = useState();
-  const [halfYear, setHalfYear] = useState();
-  const [year, setYear] = useState();
+  const [oneMonth, setOneMonth] = useState<number>();
+  const [halfYear, setHalfYear] = useState<number>();
+  const [year, setYear] = useState<number>();
   const [open, setOpen] = useState<boolean>(false);
   const [promoOpen, setPromoOpen] = useState<boolean>(false);
   const [promoId, setPromoId] = useState<string>("");
@@ -32,22 +33,26 @@ export const Landing = () => {
   ];
 
   const handlePromoSubmit = async () => {
-    const response = await userService.promoSend(promoId);
-    if (response.status === true) {
-      toast.success("Промокод активирован");
-    } else {
-      toast.error(response.message);
-    }
+    try {
+      const response = await userService.promoSend(promoId);
+      if (response.status === true) {
+        toast.success("Промокод активирован");
+      } else {
+        toast.error(response.message);
+      }
+    } catch { toast.error("Не удалось активировать промокод. Повторите попытку."); }
   };
   useEffect(() => {
     const getSubscriptionPrice = async () => {
-      const response = await userService.getSubscriptionPrice();
+      try {
+        const response = await userService.getSubscriptionPrice();
 
-      setOneMonth(response?.monthPrice ?? 990);
-      setHalfYear(response?.halfYearPrice ?? 2990);
-      setYear(response?.yearPrice ?? 5000);
+        setOneMonth(response?.monthPrice ?? 990);
+        setHalfYear(response?.halfYearPrice ?? 2990);
+        setYear(response?.yearPrice ?? 5000);
+      } catch (error) { reportRequestError(error); }
     };
-    getSubscriptionPrice();
+    void getSubscriptionPrice();
   }, []);
   const createPayments = async (
     amount: number,
@@ -55,13 +60,16 @@ export const Landing = () => {
     paymentType: string,
     email: string,
   ) => {
-    const response = await userService.createPayment(
-      amount,
-      description,
-      paymentType,
-      email,
-    );
-    setPayment(response);
+    try {
+      const response = await userService.createPayment(
+        amount,
+        description,
+        paymentType,
+        email,
+      );
+      if (response.status === false) { toast.error(response.message); return; }
+      setPayment(response);
+    } catch (error) { reportRequestError(error); }
   };
 
   const handleClick = (
@@ -246,7 +254,7 @@ export const Landing = () => {
           </div>
         </Drawer.Content>
       </Drawer>
-      <Toaster position="bottom-center" reverseOrder={false} />
+
     </>
   );
 };

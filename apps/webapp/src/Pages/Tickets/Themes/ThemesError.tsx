@@ -1,3 +1,4 @@
+import { reportRequestError } from '../../../lib/requestError';
 import { useState, useEffect } from "react";
 import Container from "../../../components/Layouts/Container/Container";
 import { ErrorCard } from "../../../components/Layouts/ErrorCard/ErrorCard";
@@ -50,13 +51,15 @@ export const ThemesError = () => {
 
   useEffect(() => {
     const fetchProgress = async () => {
-      const response = await ticketsService.progressThemes();
-      setData(response);
+      try {
+        const response = await ticketsService.progressThemes();
+        setData(response);
 
-      const category = response.categoriesProgress?.find(
-        (cat) => cat.category === decodedId
-      );
-      setMatchedCategory(category || null);
+        const category = response.categoriesProgress?.find(
+          (cat) => cat.category === decodedId
+        );
+        setMatchedCategory(category || null);
+      } catch (error) { reportRequestError(error); }
     };
     fetchProgress();
   }, [decodedId]);

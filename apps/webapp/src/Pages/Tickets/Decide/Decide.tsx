@@ -1,3 +1,4 @@
+import { reportRequestError } from '../../../lib/requestError';
 // import { useEffect, useState } from "react";
 // import { MapItem } from "../../../components/Layouts/MapItem/MapItem";
 // import { NavbarIntermediate } from "../../../components/Modules/NavbarIntermediate";
@@ -633,39 +634,45 @@ export const Decide = () => {
   };
 
   const handleOpenVideo = async (videoUrl: string, number: number) => {
-    setCurrentTicket(number);
-    const review = await ticketsService.getTicketReview();
-    if (review.status === false) {
-      navigate("/landing");
-    } else {
-      try {
-        let fullVideoUrl: string;
+    try {
+      setCurrentTicket(number);
+      const review = await ticketsService.getTicketReview();
+      if (review.status === false) {
+        navigate("/landing");
+      } else {
+        try {
+          let fullVideoUrl: string;
 
-        if (videoUrl.startsWith("http://") || videoUrl.startsWith("https://")) {
-          fullVideoUrl = videoUrl;
-        } else {
-          fullVideoUrl = `${MEDIA_URL}${videoUrl}`;
+          if (videoUrl.startsWith("http://") || videoUrl.startsWith("https://")) {
+            fullVideoUrl = videoUrl;
+          } else {
+            fullVideoUrl = `${MEDIA_URL}${videoUrl}`;
+          }
+
+          setVideoId(fullVideoUrl);
+          setShowContent(true);
+        } catch (error) {
+          console.error("Invalid video URL:", error);
+
+          setVideoId(videoUrl);
+          setShowContent(true);
         }
-
-        setVideoId(fullVideoUrl);
-        setShowContent(true);
-      } catch (error) {
-        console.error("Invalid video URL:", error);
-
-        setVideoId(videoUrl);
-        setShowContent(true);
       }
-    }
+    } catch (error) { reportRequestError(error); }
   };
 
   const handleStartTicket = async (ticket: number) => {
-    await ticketsService.startTickets(ticket);
-    navigate(`../../tickets/decide/${ticket}`);
+    try {
+      await ticketsService.startTickets(ticket);
+      navigate(`../../tickets/decide/${ticket}`);
+    } catch (error) { reportRequestError(error); }
   };
 
   const handleRandomTicket = async () => {
-    const response = await ticketsService.getRandomTicket();
-    navigate(`/tickets/decide/random/${response.number}`);
+    try {
+      const response = await ticketsService.getRandomTicket();
+      navigate(`/tickets/decide/random/${response.number}`);
+    } catch (error) { reportRequestError(error); }
   };
 
   const handleToggle = (id: string) => {

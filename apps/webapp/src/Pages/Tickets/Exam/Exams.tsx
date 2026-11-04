@@ -1,3 +1,4 @@
+import { reportRequestError } from '../../../lib/requestError';
 import tickets from "../../../assets/Tickets/Exam/Tickets.svg";
 import { NavbarIntermediate } from "../../../components/Modules/NavbarIntermediate";
 import { Button } from "../../../components/ui/Button/Button";
@@ -16,8 +17,10 @@ export const Exams = () => {
   const [data, setData] = useState<{ _id: string } | null>(null);
 
   const handleStartExam = async () => {
-    const response = await examService.startExam();
-    setData(response);
+    try {
+      const response = await examService.startExam();
+      setData(response);
+    } catch (error) { reportRequestError(error); }
   };
   useEffect(() => {
     if (data) {

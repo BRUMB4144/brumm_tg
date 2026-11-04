@@ -1,3 +1,4 @@
+import { reportRequestError } from '../../../lib/requestError';
 import { useState, useEffect } from "react";
 
 import { ticketsService } from "../../../services/tickets.service";
@@ -39,8 +40,10 @@ export const DecideShare = () => {
   const navigate = useNavigate();
   useEffect(() => {
     const fetchProgress = async () => {
-      const response = await ticketsService.progress();
-      setData(response);
+      try {
+        const response = await ticketsService.progress();
+        setData(response);
+      } catch (error) { reportRequestError(error); }
     };
     fetchProgress();
   }, []);

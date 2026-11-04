@@ -90,7 +90,7 @@ test('админ-бот: без TELEGRAM_ADMIN_CHAT_IDS не отвечает н
   assert.deepStrictEqual(sent, []);
 });
 
-const appSettingsService = require('../services/appSettingsService');
+const appSettingsService = require('../services/gusevApi');
 
 /** Режим PRO в памяти вместо базы. */
 const mockProMode = (t, initial) => {

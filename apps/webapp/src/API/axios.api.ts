@@ -1,53 +1,58 @@
-import axios from "axios";
-import { API_URL } from "../config";
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { API_URL } from '../config';
+import { AuthTokens, clearSession, persistTokens } from '../lib/session';
 
-export const axiosInstance = axios.create({
-  baseURL: `${API_URL}/`,
-});
-
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+type RetryConfig = InternalAxiosRequestConfig & { _retry?: boolean };
+export const createApiClient = (
+  storage: Storage = localStorage,
+  onSessionLost: () => void = () => { window.location.href = '/'; },
+) => {
+  const client = axios.create({ baseURL: `${API_URL}/`, timeout: 15_000 });
+  // Separate client prevents recursion if the refresh request itself returns 401.
+  const auth = axios.create({ baseURL: `${API_URL}/`, timeout: 15_000 });
+  let refreshing: Promise<AuthTokens> | null = null;
+  client.interceptors.request.use(config => {
+    const token = storage.getItem('accessToken');
+    if (token) config.headers.set('Authorization', `Bearer ${token}`);
     return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const refreshToken = localStorage.getItem("refreshToken");
-
-        const res = await axios.post(`${API_URL}/users/refresh`, {
-          refreshToken,
-        });
-
-        const newAccessToken = res.data.accessToken;
-        localStorage.setItem("accessToken", newAccessToken);
-
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-
-        return axiosInstance(originalRequest);
-      } catch (refreshError) {
-        console.error("Ошибка при обновлении токена", refreshError);
-        // Можно очистить токены и перенаправить на логин
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("id");
-        window.location.href = "/"; // или navigate("/")
-        return Promise.reject(refreshError);
-      }
+  });
+  const refresh = () => {
+    if (!refreshing) {
+      refreshing = (async () => {
+        try {
+          const refreshToken = storage.getItem('refreshToken');
+          if (!refreshToken) {
+            clearSession(storage);
+            onSessionLost();
+            throw new Error('Сессия завершена');
+          }
+          const { data } = await auth.post<AuthTokens>('users/refresh', { refreshToken });
+          if (!data.accessToken || !data.refreshToken) throw new Error('Некорректный ответ обновления сессии');
+          persistTokens(data, storage);
+          return data;
+        } catch (error) {
+          if (axios.isAxiosError(error) && [401, 403].includes(error.response?.status || 0)) {
+            clearSession(storage);
+            onSessionLost();
+          }
+          throw error;
+        }
+      })().finally(() => { refreshing = null; });
     }
-
-    return Promise.reject(error);
-  }
-);
+    return refreshing;
+  };
+  client.interceptors.response.use(response => response, async (error: AxiosError) => {
+    const original = error.config as RetryConfig | undefined;
+    if (!original || error.response?.status !== 401 || original._retry ||
+        /users\/(login|refresh)(?:\?|$)/.test(original.url || '')) throw error;
+    original._retry = true;
+    // A late 401 for the old token can arrive after another request refreshed it.
+    const current = storage.getItem('accessToken');
+    const sent = original.headers.get('Authorization');
+    const token = current && sent !== `Bearer ${current}` ? current : (await refresh()).accessToken;
+    original.headers.set('Authorization', `Bearer ${token}`);
+    return client(original);
+  });
+  return { client, auth };
+};
+export const axiosInstance = createApiClient().client;

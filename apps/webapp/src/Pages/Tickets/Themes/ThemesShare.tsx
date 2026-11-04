@@ -1,3 +1,4 @@
+import { reportRequestError } from '../../../lib/requestError';
 import { useState, useEffect } from "react";
 
 import { ticketsService } from "../../../services/tickets.service";
@@ -53,13 +54,15 @@ export const ThemesShare = () => {
 
   useEffect(() => {
     const fetchProgress = async () => {
-      const response = await ticketsService.progressThemes();
-      setData(response);
+      try {
+        const response = await ticketsService.progressThemes();
+        setData(response);
 
-      const category = response.categoriesProgress?.find(
-        (cat) => cat.category === decodedId
-      );
-      setMatchedCategory(category || null);
+        const category = response.categoriesProgress?.find(
+          (cat) => cat.category === decodedId
+        );
+        setMatchedCategory(category || null);
+      } catch (error) { reportRequestError(error); }
     };
     fetchProgress();
   }, [decodedId]);

@@ -1,3 +1,4 @@
+import { reportRequestError } from '../../../lib/requestError';
 import { useState, useEffect } from "react";
 
 import Container from "../../../components/Layouts/Container/Container";
@@ -38,8 +39,10 @@ export const DecideVideo = () => {
   const lastTicketProgress = data?.ticketsProgress.slice(-1)[0] || null;
   useEffect(() => {
     const fetchProgress = async () => {
-      const response = await ticketsService.progress();
-      setData(response);
+      try {
+        const response = await ticketsService.progress();
+        setData(response);
+      } catch (error) { reportRequestError(error); }
     };
     fetchProgress();
   }, []);

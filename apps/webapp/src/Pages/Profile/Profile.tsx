@@ -17,18 +17,19 @@ export const Profile = () => {
   const [copied, setCopied] = useState<boolean>(false);
 
   // Запрос для получения данных профиля
-  const { data: user, isLoading: isUserLoading } = useQuery({
+  const { data: user, isLoading: isUserLoading, isError: isUserError, refetch: reloadUser } = useQuery({
     queryKey: ["profile"],
     queryFn: userService.getProfile,
     staleTime: 10 * 60 * 1000, // Кэшируем на 10 минут
   });
 
-  const { data: referals, isLoading: isReferalsLoading } = useQuery({
+  const { data: referals, isLoading: isReferalsLoading, isError: isReferalsError, refetch: reloadReferals } = useQuery({
     queryKey: ["referals"],
     queryFn: userService.getReferals,
     staleTime: 10 * 60 * 1000, // Кэшируем на 10 минут
   });
 
+  if (isUserError || isReferalsError) return <Container><p role="alert">Не удалось загрузить профиль. <button onClick={() => { void reloadUser(); void reloadReferals(); }}>Повторить</button></p></Container>;
   const type = user?.subscription.type;
 
   const handleCopy = () => {

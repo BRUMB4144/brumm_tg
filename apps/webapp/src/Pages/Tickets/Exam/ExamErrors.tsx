@@ -1,3 +1,4 @@
+import { reportRequestError } from '../../../lib/requestError';
 import { useState, useEffect } from "react";
 import Container from "../../../components/Layouts/Container/Container";
 import { ErrorCard } from "../../../components/Layouts/ErrorCard/ErrorCard";
@@ -79,8 +80,10 @@ export const ExamErrors = () => {
 
   useEffect(() => {
     const fetchProgress = async () => {
-      const response = await examService.result(id);
-      setData(response);
+      try {
+        const response = await examService.result(id);
+        setData(response);
+      } catch (error) { reportRequestError(error); }
     };
     fetchProgress();
   }, [id]);

@@ -4,127 +4,78 @@ import { IMarathon, MarathonResult } from "../types/marathon.types";
 
 export const examService = {
   async startExam() {
-    try {
-      const token = localStorage.getItem("id");
-      if (!token) {
-        throw new Error("Пользователь не найден в localStorage");
-      }
-      const response = await axiosInstance.post("exam/start", {
-        userId: token,
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Ошибка при старте экзамена", error);
-      throw error;
+    const token = localStorage.getItem("id");
+    if (!token) {
+      throw new Error("Пользователь не найден в localStorage");
     }
+    const response = await axiosInstance.post("exam/start", {
+      userId: token,
+    });
+    return response.data;
   },
   async sendAnswer(
     examId: string,
     payload: IAnswer
-  ): Promise<IAnswer | undefined> {
-    try {
-      const response = await axiosInstance.post<IAnswer>(
-        `exam/${examId}/answer`,
-        payload
-      );
-      return response.data;
-    } catch {
-      console.error("Ошибка при ответе на экзамен");
-    }
+  ): Promise<IAnswer> {
+    const response = await axiosInstance.post<IAnswer>(
+      `exam/${examId}/answer`,
+      payload
+    );
+    return response.data;
   },
-  async status(examId: string): Promise<IExamStatus | undefined> {
-    try {
-      const response = await axiosInstance.get<IExamStatus>(`exam/${examId}`);
-      return response.data;
-    } catch {
-      console.error("Ошибка при получении статуса эказмена");
-    }
+  async status(examId: string): Promise<IExamStatus> {
+    const response = await axiosInstance.get<IExamStatus>(`exam/${examId}`);
+    return response.data;
   },
   async share(examId: string) {
-    try {
-      const response = await axiosInstance.get(`exam/${examId}/share`);
-      return response.data;
-    } catch (err) {
-      return err;
-    }
+    const response = await axiosInstance.get(`exam/${examId}/share`);
+    return response.data;
   },
-  async selectTicket(): Promise<ITicket | undefined> {
-    try {
-      const token = localStorage.getItem("id");
-      const response = await axiosInstance.post<ITicket>(
-        `exam/select-ticket`,
-        { userId: token },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      return response.data;
-    } catch {
-      console.error("Ошибка при получении билета");
-    }
+  async selectTicket(): Promise<ITicket> {
+    const token = localStorage.getItem("id");
+    const response = await axiosInstance.post<ITicket>(
+      `exam/select-ticket`,
+      { userId: token }
+    );
+    return response.data;
   },
 
   async result(examId: string) {
-    try {
-      const response = await axiosInstance.get(`exam/${examId}/results`);
-      return response.data;
-    } catch {
-      console.error("Ошибка при получении результата");
-    }
+    const response = await axiosInstance.get(`exam/${examId}/results`);
+    return response.data;
   },
   async marathon(type: string) {
-    try {
-      const userId = localStorage.getItem("id");
-      const response = await axiosInstance.post("exam/marathon/start", {
-        userId: userId,
-        type: type,
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Не удается получить доступ к марафону", error);
-    }
+    const userId = localStorage.getItem("id");
+    const response = await axiosInstance.post("exam/marathon/start", {
+      userId: userId,
+      type: type,
+    });
+    return response.data;
   },
 
   async marathonNewQuestions() {
-    try {
-      const response = await axiosInstance.get<IMarathon>("exam/questions/new");
-      return response.data;
-    } catch (error) {
-      console.error("Не удается получить доступ к марафону", error);
-    }
+    const response = await axiosInstance.get<IMarathon>("exam/questions/new");
+    return response.data;
   },
   async marathonProgress() {
     const userId = localStorage.getItem("id");
-    try {
-      const response = await axiosInstance.get(
-        `exam/marathon/progress?userId=${userId}`
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Не удается получить доступ к марафону", error);
-    }
+    const response = await axiosInstance.get(
+      `exam/marathon/progress?userId=${userId}`
+    );
+    return response.data;
   },
   async marathonResult(marathonId: string): Promise<MarathonResult> {
-    try {
-      const response = await axiosInstance.post("exam/marathon/result", {
-        marathonId,
-      });
-      return response.data as MarathonResult;
-    } catch (error) {
-      console.error("Не удалось получить результат марафона", error);
-      throw error;
-    }
+    const response = await axiosInstance.post("exam/marathon/result", {
+      marathonId,
+    });
+    return response.data as MarathonResult;
   },
   async answerMarathon(examId: string, payload: IAnswer) {
-    try {
-      const response = await axiosInstance.post<IAnswer>(
-        `exam/marathon/${examId}/answer`,
-        payload
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Не удается получить доступ к марафону", error);
-    }
+    const response = await axiosInstance.post<IAnswer>(
+      `exam/marathon/${examId}/answer`,
+      payload
+    );
+    return response.data;
   },
   async shareStory(
     correct: string,
@@ -132,19 +83,15 @@ export const examService = {
     time: string,
     type: string
   ) {
-    try {
-      const response = await axiosInstance.post(
-        `exam/marathon/generateTemplate`,
-        {
-          correct: correct,
-          mistakes: mistakes,
-          time: time,
-          type: type,
-        }
-      );
-      return response.data;
-    } catch (err) {
-      console.log(err);
-    }
+    const response = await axiosInstance.post(
+      `exam/marathon/generateTemplate`,
+      {
+        correct: correct,
+        mistakes: mistakes,
+        time: time,
+        type: type,
+      }
+    );
+    return response.data;
   },
 };

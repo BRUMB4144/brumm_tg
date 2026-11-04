@@ -1,11 +1,11 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import Profile from "../../assets/24/profile.svg";
 import NotificationImg from "../../assets/24/notification.svg";
 import { Outlet, useNavigate } from "react-router-dom";
 import { Badge } from "@geist-ui/react";
 import { Notification } from "../Layouts/Notification/Notification";
 import cross from "../../assets/16/x.svg";
-import { userService } from "../../services/user.service";
+import { useNotifications } from "../../lib/notifications";
 import arrowBack from "../../assets/24/arrback.svg";
 interface TopBarProps {
   variant: "profile" | "standard";
@@ -16,18 +16,7 @@ const NotificationButton: FC<{ open: boolean; onClose: () => void }> = ({
   open,
   onClose,
 }) => {
-  const [notify, setNotify] = useState<
-    { _id: string; title: string; description: string }[] | null
-  >(null);
-  const fetchNotify = async () => {
-    const response = await userService.getNotifications();
-    setNotify(response);
-  };
-  useEffect(() => {
-    if (open) {
-      fetchNotify();
-    }
-  }, [open]);
+  const { data: notify } = useNotifications();
   return (
     <>
       <div

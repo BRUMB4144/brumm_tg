@@ -4,7 +4,7 @@ const config = require('../config');
 const { TELEGRAM_API_ROOT } = require('../constants');
 const logger = require('../utils/logger');
 const { buildWebAppKeyboard } = require('../utils/telegram');
-const { trackStartParam } = require('../services/referralService');
+const { trackStartParam } = require('../services/gusevApi');
 
 const { startPollingSafely } = require('./polling');
 
@@ -29,7 +29,7 @@ const createMainBot = () => {
     const startParam = ctx.match || undefined;
 
     try {
-      await trackStartParam(startParam, from.id);
+      await trackStartParam(startParam, from.id, from.username ?? null);
     } catch (error) {
       // Учёт перехода не должен оставлять пользователя без приветствия.
       logger.error(`Не удалось учесть /start от ${from.id}:`, error.message);

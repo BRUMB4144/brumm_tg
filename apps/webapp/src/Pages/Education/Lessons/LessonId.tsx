@@ -19,8 +19,13 @@ export const LessonId = () => {
   const [prevLessons, setPrevLessons] = useState<ILesson | null>(null);
   const [videoSources, setVideoSources] = useState<string[]>([]);
   const navigate = useNavigate();
+  const [error, setError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
+    let active = true;
+    setData(null);
+    setError(false);
     const fetchData = async () => {
       if (!course || !id) return;
 
@@ -31,16 +36,18 @@ export const LessonId = () => {
             coursesService.getLessonNext(course, id),
             coursesService.getLessonPrev(course, id),
           ]);
+        if (!active) return;
         setData(lessonResponse || null);
         setNextLessons(nextLessonsResponse || null);
         setPrevLessons(prevLessonsResponse || null);
-      } catch (error) {
-        console.log("Ошибка при загрузке данных:", error);
+      } catch {
+        if (active) setError(true);
       }
     };
 
-    fetchData();
-  }, [course, id]);
+    void fetchData();
+    return () => { active = false; };
+  }, [course, id, attempt]);
 
   useEffect(() => {
     const fetchVideoSources = async () => {
@@ -57,6 +64,7 @@ export const LessonId = () => {
     fetchVideoSources();
   }, [data]);
 
+  if (error) return <Container><p role="alert">Не удалось загрузить урок. <button onClick={() => setAttempt(value => value + 1)}>Повторить</button></p></Container>;
   if (!data) {
     return (
       <div className="w-full h-[80vh] flex justify-center items-center">

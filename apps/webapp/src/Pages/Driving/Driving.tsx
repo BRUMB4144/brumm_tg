@@ -1,3 +1,4 @@
+import { reportRequestError } from '../../lib/requestError';
 import wheel from "../../assets/steeringWheel.png";
 import gameImg from "../../assets/Game/steeringWheel.png";
 import Navigate from "../../assets/Navigate.svg";
@@ -25,8 +26,10 @@ export const Driving = () => {
       setCount(parseInt(storedCount, 10));
     }
     const fetchCourses = async () => {
-      const response = await coursesService.fetchCourses();
-      setCourses(response);
+      try {
+        const response = await coursesService.fetchCourses();
+        setCourses(response);
+      } catch (error) { reportRequestError(error); }
     };
     fetchCourses();
   }, []);

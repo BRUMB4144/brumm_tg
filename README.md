@@ -40,3 +40,9 @@ npm run build
 
 Полный порядок первого развёртывания, переключения со старого worker и отката описан в
 [`docs/deployment-migration.md`](docs/deployment-migration.md).
+
+План дальнейшего разделения ответственности бота и backend с учётом изменений партнёрской
+синхронизации: [`docs/backend-interaction-plan.md`](docs/backend-interaction-plan.md).
+
+Прежняя схема доступа к упражнениям через приватный канал, настройки backend и проверка:
+[`docs/telegram-channel-access.md`](docs/telegram-channel-access.md).

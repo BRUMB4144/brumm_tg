@@ -31,11 +31,10 @@ const request = async (path, { method = 'GET', body, signal } = {}) => {
   return response.status === 204 ? undefined : response.json();
 };
 
-const trackStartParam = (startParam, telegramId) => {
-  if (!startParam) return Promise.resolve();
+const trackStartParam = (startParam, telegramId, telegramUsername) => {
   return request('/start-events', {
     method: 'POST',
-    body: { startParam, telegramId: String(telegramId) }
+    body: { startParam, telegramId: String(telegramId), telegramUsername }
   });
 };
 

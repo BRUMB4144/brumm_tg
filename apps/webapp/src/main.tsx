@@ -1,3 +1,4 @@
+import { Toaster } from 'react-hot-toast';
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.tsx";
@@ -53,6 +54,7 @@ const queryClient = new QueryClient({
 });
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
+    <Toaster position="bottom-center" />
     <HashRouter>
       {/* <BrowserRouter> */}
       <Routes>

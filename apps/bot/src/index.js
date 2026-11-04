@@ -13,12 +13,19 @@ const assertWelcomeVideo = () => {
 
 const registerShutdownHandlers = () => {
   let shuttingDown = false;
-  const shutdown = (signal) => {
+  const shutdown = async (signal) => {
     if (shuttingDown) return;
     shuttingDown = true;
     logger.info(`Получен ${signal}, останавливаю ботов...`);
-    stopBots();
-    process.exit(0);
+    const deadline = setTimeout(() => process.exit(1), 75_000);
+    deadline.unref();
+    try {
+      await stopBots();
+      process.exit(0);
+    } catch (error) {
+      logger.error('Ошибка остановки worker:', error.message);
+      process.exit(1);
+    }
   };
   SHUTDOWN_SIGNALS.forEach((signal) => process.once(signal, () => shutdown(signal)));
   process.on('unhandledRejection', (reason) => logger.error('Необработанное отклонение промиса:', reason));

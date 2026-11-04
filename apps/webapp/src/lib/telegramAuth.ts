@@ -1,3 +1,5 @@
+import { persistTokens } from './session';
+
 export interface TelegramLoginPayload {
   initData: string;
   telegramId: number;
@@ -27,7 +29,6 @@ export const persistTelegramSession = (
   storage: Pick<Storage, "setItem"> = localStorage,
 ): void => {
   storage.setItem("id", String(response.userId));
-  storage.setItem("accessToken", response.accessToken);
-  storage.setItem("refreshToken", response.refreshToken);
+  persistTokens(response, storage);
   storage.setItem("telegramId", String(response.telegramId));
 };

@@ -1,3 +1,4 @@
+import { reportRequestError } from '../../../lib/requestError';
 import { useEffect, useState } from "react";
 import { MapItem } from "../../../components/Layouts/MapItem/MapItem";
 import { NavbarIntermediate } from "../../../components/Modules/NavbarIntermediate";
@@ -86,12 +87,14 @@ export const Lessons = () => {
   };
 
   const openLesson = async (lessonId: string) => {
-    if (subscription === false) {
-      navigate("/landing");
-    } else {
-      navigate(`/education/${course}/${lessonId}`);
-      await coursesService.markChecked(course!, lessonId);
-    }
+    try {
+      if (subscription === false) {
+        navigate("/landing");
+      } else {
+        navigate(`/education/${course}/${lessonId}`);
+        await coursesService.markChecked(course!, lessonId);
+      }
+    } catch (error) { reportRequestError(error); }
   };
 
   return (

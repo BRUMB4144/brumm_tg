@@ -41,3 +41,12 @@ test('service client exposes backend status on error', async (t) => {
   t.mock.method(global, 'fetch', async () => new Response('denied', { status: 401 }));
   await assert.rejects(() => api.getProMode(), { name: 'GusevApiError', status: 401 });
 });
+
+test('start without deep link still synchronizes an explicit username removal', async (t) => {
+  let body;
+  t.mock.method(global, 'fetch', async (_, options) => {
+    body = JSON.parse(options.body); return new Response(null, { status: 204 });
+  });
+  await api.trackStartParam(undefined, 456, null);
+  assert.deepEqual(body, { telegramId: '456', telegramUsername: null });
+});

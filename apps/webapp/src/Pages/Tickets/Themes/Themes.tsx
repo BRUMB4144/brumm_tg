@@ -1,3 +1,4 @@
+import { reportRequestError } from '../../../lib/requestError';
 import { useEffect, useState } from "react";
 import { MapItem } from "../../../components/Layouts/MapItem/MapItem";
 import { NavbarIntermediate } from "../../../components/Modules/NavbarIntermediate";
@@ -150,8 +151,10 @@ export const Themes = () => {
   const [positions, setPositions] = useState(positionsMD);
 
   const handleStart = async (category: string) => {
-    await ticketsService.startTicketsTheme(category);
-    navigate(`../../tickets/themes/${category}`);
+    try {
+      await ticketsService.startTicketsTheme(category);
+      navigate(`../../tickets/themes/${category}`);
+    } catch (error) { reportRequestError(error); }
   };
 
   useEffect(() => {
@@ -209,8 +212,10 @@ export const Themes = () => {
       }
     };
     const fetchProgress = async () => {
-      const response = await ticketsService.progressThemes();
-      setProgress(response);
+      try {
+        const response = await ticketsService.progressThemes();
+        setProgress(response);
+      } catch (error) { reportRequestError(error); }
     };
     fetchThemes();
     fetchProgress();

@@ -1,3 +1,4 @@
+import { reportRequestError } from '../../lib/requestError';
 import Container from "../../components/Layouts/Container/Container";
 import {
   NavigationCard,
@@ -41,8 +42,10 @@ export const Navigation = () => {
       }
     };
     const getNavlinks = async () => {
-      const response = await NavigationService.getNavLinks();
-      setNavLinks(response);
+      try {
+        const response = await NavigationService.getNavLinks();
+        setNavLinks(response);
+      } catch (error) { reportRequestError(error); }
     };
     fetchProfile();
     getNavlinks();

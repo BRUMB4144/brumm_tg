@@ -1,3 +1,4 @@
+import { reportRequestError } from '../../../lib/requestError';
 import Container from "../../../components/Layouts/Container/Container";
 import { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { Button } from "../../../components/ui/Button/Button";
@@ -40,12 +41,14 @@ export const DecideId = () => {
     setShowVideo(false);
   };
   const handleOpenVideo = async () => {
-    const getQuestionReview = await ticketsService.getQuestionReview();
-    if (getQuestionReview.status === false) {
-      navigate("/landing");
-    } else {
-      setShowVideo(true);
-    }
+    try {
+      const getQuestionReview = await ticketsService.getQuestionReview();
+      if (getQuestionReview.status === false) {
+        navigate("/landing");
+      } else {
+        setShowVideo(true);
+      }
+    } catch (error) { reportRequestError(error); }
   };
   useEffect(() => {
     if (questionsContainerRef.current) {

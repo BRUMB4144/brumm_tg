@@ -1,3 +1,4 @@
+import { reportRequestError } from '../../../lib/requestError';
 import Container from "../../../components/Layouts/Container/Container";
 import { Button } from "../../../components/ui/Button/Button";
 import { Drawer } from "@geist-ui/react";
@@ -87,45 +88,47 @@ export const MarathonNew = () => {
   const isLastQuestion = currentIndex === data.exam.questions.length - 1;
 
   const handleAnswer = async (selectedIndex: number) => {
-    const answer = {
-      questionIndex: currentIndex,
-      number:
-        typeof currentQuestion.questionId.number === "number"
-          ? currentQuestion.questionId.number
-          : 0,
-      userAnswer: selectedIndex,
-    };
-    await examService.answerMarathon(data.exam._id, answer);
+    try {
+      const answer = {
+        questionIndex: currentIndex,
+        number:
+          typeof currentQuestion.questionId.number === "number"
+            ? currentQuestion.questionId.number
+            : 0,
+        userAnswer: selectedIndex,
+      };
+      await examService.answerMarathon(data.exam._id, answer);
 
-    if (!currentQuestion || !data?.questions) return;
+      if (!currentQuestion || !data?.questions) return;
 
-    const currentQuestionData = data.questions.find(
-      (q) => q._id === currentQuestion.questionId._id
-    );
-    const correctIndex = currentQuestionData?.options.findIndex(
-      (option) => option.isCorrect
-    );
-    const isCorrect = selectedIndex === correctIndex;
+      const currentQuestionData = data.questions.find(
+        (q) => q._id === currentQuestion.questionId._id
+      );
+      const correctIndex = currentQuestionData?.options.findIndex(
+        (option) => option.isCorrect
+      );
+      const isCorrect = selectedIndex === correctIndex;
 
-    setAnswers((prev) => {
-      const newAnswers = new Map(prev).set(currentQuestion.questionId._id, {
-        isCorrect,
-        selectedIndex,
+      setAnswers((prev) => {
+        const newAnswers = new Map(prev).set(currentQuestion.questionId._id, {
+          isCorrect,
+          selectedIndex,
+        });
+        return newAnswers;
       });
-      return newAnswers;
-    });
 
-    if (isLastQuestion) {
-      navigate(`/tickets/marathons/marathonFull/${data.exam._id}/results`);
-      return;
-    }
+      if (isLastQuestion) {
+        navigate(`/tickets/marathons/marathonFull/${data.exam._id}/results`);
+        return;
+      }
 
-    if (isCorrect) {
-      setAnswerError(false);
-      setActive(data.exam.questions[currentIndex + 1].questionId._id);
-    } else {
-      setAnswerError(true);
-    }
+      if (isCorrect) {
+        setAnswerError(false);
+        setActive(data.exam.questions[currentIndex + 1].questionId._id);
+      } else {
+        setAnswerError(true);
+      }
+    } catch (error) { reportRequestError(error); }
   };
 
   const getImageUrl = (imageUrl: string): string => {
