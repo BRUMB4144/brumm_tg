@@ -6,14 +6,13 @@
     "node": ">=20"
   },
   "workspaces": [
-    "apps/*"
+    "webapp"
   ],
   "scripts": {
     "build": "npm run build --workspace=@brumm-tg/webapp",
     "lint": "npm run lint --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspace=@brumm-tg/webapp",
-    "start:bot": "npm run start --workspace=@brumm-tg/bot",
     "dev:webapp": "npm run dev --workspace=@brumm-tg/webapp"
   }
 }

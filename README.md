@@ -1,42 +1,26 @@
-# brumm_tg
+# Brumm WebApp
 
-Telegram-контур GuseffGO: Mini App и отдельный worker пользовательского, административного и
-рассылочного ботов. Данные остаются в `gusev_new`; worker получает их через закрытый
-`/api/internal/telegram` с service token.
+Telegram Mini App (React + Vite). Боты находятся в brumm_backend/src/telegram
+и запускаются отдельным worker-процессом вместе с репозиторием backend.
 
-## Локальный запуск
+## Запуск
 
-Требуется Node.js 20 или новее.
+Node.js ≥ 20. Из корня репозитория:
 
 ```bash
 npm install
-cp .env.example .env
-cp apps/webapp/.env.example apps/webapp/.env
+cp webapp/.env.example webapp/.env
 npm run dev:webapp
-npm run start:bot
 ```
 
-Для bot worker обязательны `TELEGRAM_BOT_TOKEN`, `TELEGRAM_SERVICE_TOKEN` и читаемый файл по
-`WELCOME_VIDEO_PATH`. Admin/broadcast bots запускаются только когда заданы оба их токена.
+Mini App использует VITE_API_URL и VITE_MEDIA_URL.
+Секреты ботов здесь не требуются. Авторизацию initData, платежи,
+контент и общие данные обслуживает backend.
 
-## Проверки
+Проверки: npm run lint, npm run typecheck, npm test, npm run build.
+Сборка создаёт webapp/dist; production: https://front.gusefwebapp.pro.
 
-```bash
-npm run lint
-npm run typecheck
-npm test
-npm run build
-```
+## Документация
 
-## Production
-
-- `npm run build` создаёт `apps/webapp/dist`, который отдаётся nginx на текущем WebApp-домене.
-- `pm2 start ecosystem.config.js` запускает один `brumm-tg-bot`. Второй экземпляр с теми же
-  токенами запускать нельзя: Telegram long polling ответит `409 Conflict`.
-- Перед первым запуском нового worker остановить прежний `gusev-bot`.
-
-Шаблон nginx находится в `deploy/nginx-front.gusefwebapp.pro.conf`. Секреты и приветственное видео
-в git не хранятся.
-
-Полный порядок первого развёртывания, переключения со старого worker и отката описан в
-[`docs/deployment-migration.md`](docs/deployment-migration.md).
+- [Выкладка WebApp](docs/deployment.md).
+- [Telegram worker и доступ в канал](../brumm_backend/docs/telegram.md).
