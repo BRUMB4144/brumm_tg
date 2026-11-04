@@ -1,48 +1,56 @@
-# brumm_tg
+# Brumm Telegram
 
-Telegram-контур GuseffGO: Mini App и отдельный worker пользовательского, административного и
-рассылочного ботов. Данные остаются в `gusev_new`; worker получает их через закрытый
-`/api/internal/telegram` с service token.
+Mini App (React + Vite) и worker основного, административного и рассылочного ботов.
+Данные, платежи, проверка `initData`, партнёрка и доступ в закрытый канал принадлежат
+`brumm_backend` (серверный каталог `/var/www/gusev`). Worker ходит в закрытый API и не подключается к MongoDB.
 
-## Локальный запуск
+## Запуск
 
-Требуется Node.js 20 или новее.
+Нужен Node.js ≥ 20. Все команды выполняются из корня репозитория:
 
 ```bash
 npm install
 cp .env.example .env
 cp apps/webapp/.env.example apps/webapp/.env
-npm run dev:webapp
-npm run start:bot
+npm run dev:webapp              # Mini App
+npm run start:bot               # worker, отдельный терминал
 ```
 
-Для bot worker обязательны `TELEGRAM_BOT_TOKEN`, `TELEGRAM_SERVICE_TOKEN` и читаемый файл по
-`WELCOME_VIDEO_PATH`. Admin/broadcast bots запускаются только когда заданы оба их токена.
+Заполнить `TELEGRAM_BOT_TOKEN`, общий с backend `TELEGRAM_SERVICE_TOKEN` и путь к читаемому
+приветственному видео `WELCOME_VIDEO_PATH`. Admin/broadcast bots требуют обоих токенов;
+доступ администраторов задаёт `TELEGRAM_ADMIN_CHAT_IDS`.
+Mini App использует `VITE_API_URL` и `VITE_MEDIA_URL`.
+Секреты и видео в Git не хранятся.
 
-## Проверки
+Проверки: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`.
+Сборка создаёт `apps/webapp/dist`; production-домен — `https://front.gusefwebapp.pro`.
 
-```bash
-npm run lint
-npm run typecheck
-npm test
-npm run build
-```
+## Взаимодействие с backend
 
-## Production
+Mini App передаёт подписанный `initData` в `/api/users/login`, хранит access/refresh и
+объединяет параллельные 401 в один refresh. Сетевой сбой не удаляет сессию;
+подтверждённый отказ авторизации очищает её. Ошибки запросов передаются в UI.
 
-- `npm run build` создаёт `apps/webapp/dist`, который отдаётся nginx на текущем WebApp-домене.
-- `pm2 start ecosystem.config.js` запускает один `brumm-tg-bot`. Второй экземпляр с теми же
-  токенами запускать нельзя: Telegram long polling ответит `409 Conflict`.
-- Перед первым запуском нового worker остановить прежний `gusev-bot`.
+Worker использует `/api/internal/telegram` с `Authorization: Bearer <TELEGRAM_SERVICE_TOKEN>`:
 
-Шаблон nginx находится в `deploy/nginx-front.gusefwebapp.pro.conf`. Секреты и приветственное видео
-в git не хранятся.
+| Метод и путь | Назначение |
+|---|---|
+| `POST /start-events` | При каждом `/start`: обновить username существующего пользователя, учесть `ref_`, `c_`, `ac_` |
+| `GET /broadcast-recipients?after=&limit=` | Страница числовых Telegram ID для рассылки |
+| `GET /pro-mode` | Режим PRO по платформам |
+| `PUT /pro-mode` | Изменить режим одной платформы |
 
-Полный порядок первого развёртывания, переключения со старого worker и отката описан в
-[`docs/deployment-migration.md`](docs/deployment-migration.md).
+В `start-events`: `telegramId` — числовая строка, необязательный `startParam` — непустая строка
+до 64 символов, `telegramUsername` — 1–32 латинских букв, цифр или `_`.
+Отсутствующий username сохраняет прежнее значение, `null` очищает; ответ — 204.
+Учебный аккаунт здесь не создаётся. Ошибка учёта перехода не мешает приветствию бота.
 
-План дальнейшего разделения ответственности бота и backend с учётом изменений партнёрской
-синхронизации: [`docs/backend-interaction-plan.md`](docs/backend-interaction-plan.md).
+## Эксплуатация
 
-Прежняя схема доступа к упражнениям через приватный канал, настройки backend и проверка:
-[`docs/telegram-channel-access.md`](docs/telegram-channel-access.md).
+- [Развёртывание и откат](docs/deployment.md): nginx, окружение, единственный polling-процесс.
+- [Доступ к упражнениям](docs/telegram-channel-access.md): приглашения и исключение из канала.
+- [Партнёрка backend](../brumm_backend/docs/partners.md): синхронизация AppMetrica.
+
+Открытые задачи: фоновое закрытие канала по истечении PRO, восстановление рассылок после
+рестарта и защита от гонок платёжных callbacks. Production-проверку выполнять после выкладки;
+локальные HTTP-тесты требуют среды, разрешающей открытие порта (`listen EPERM` означает ограничение среды).
